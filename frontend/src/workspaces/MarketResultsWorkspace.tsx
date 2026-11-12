@@ -1,8 +1,10 @@
-import { useState } from 'react';
-import type { Product, MarketSummary, EvidenceEnvelope } from '../types';
+import { useState, useEffect } from 'react';
+import type { Product, MarketSummary, OpportunityAnalysis, EvidenceEnvelope } from '../types';
 import { SampleSizeBadge } from '../components/Badges';
+import { AnalyticsWorkspace } from './AnalyticsWorkspace';
 import {
   ShoppingBag,
+  BarChart2,
   ArrowUpDown,
   ChevronLeft,
   ChevronRight,
@@ -20,6 +22,7 @@ interface MarketResultsWorkspaceProps {
   products: Product[];
   totalProducts: number;
   analyticsEnvelope: EvidenceEnvelope<MarketSummary> | null;
+  opportunitiesEnvelope?: EvidenceEnvelope<OpportunityAnalysis> | null;
   selectedAsin?: string;
   onSelectProduct: (product: Product) => void;
   currentPage: number;
@@ -28,12 +31,14 @@ interface MarketResultsWorkspaceProps {
   sortBy: string;
   onSortChange: (sort: string) => void;
   isLoading: boolean;
+  initialView?: 'catalog' | 'analytics';
 }
 
 export function MarketResultsWorkspace({
   products,
   totalProducts,
   analyticsEnvelope,
+  opportunitiesEnvelope,
   selectedAsin,
   onSelectProduct,
   currentPage,
@@ -42,9 +47,17 @@ export function MarketResultsWorkspace({
   sortBy,
   onSortChange,
   isLoading,
+  initialView = 'catalog',
 }: MarketResultsWorkspaceProps) {
+  const [activeSection, setActiveSection] = useState<'catalog' | 'analytics'>(initialView);
   const [searchTerm, setSearchTerm] = useState('');
   const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid');
+
+  useEffect(() => {
+    if (initialView) {
+      setActiveSection(initialView);
+    }
+  }, [initialView]);
 
   const summary = analyticsEnvelope?.data;
   const sampleSize = analyticsEnvelope?.meta?.sample_size ?? totalProducts;
@@ -67,45 +80,84 @@ export function MarketResultsWorkspace({
       <div className="flex flex-wrap items-center justify-between gap-4 pb-2 border-b border-[#e2e8f0]">
         <div>
           <div className="flex items-center gap-1.5 text-xs text-[#75777c] uppercase font-mono tracking-wider">
-            <span>Marketplace Results</span>
+            <span>Marketplace Intelligence</span>
             <span>/</span>
-            <span>Kurtas & Kurtis</span>
+            <span>Kurtas &amp; Kurtis</span>
             <span>/</span>
             <span className="text-[#8a5100] font-bold">Odisha Cluster</span>
           </div>
           <h1 className="text-2xl font-bold tracking-tight text-[#131b2e] mt-1 flex items-center gap-2">
-            <ShoppingBag className="text-[#ff9900]" size={24} />
-            Marketplace Catalog & Performance
+            <BarChart2 className="text-[#ff9900]" size={24} />
+            Market Results &amp; Analytics
           </h1>
         </div>
 
-        <div className="flex items-center gap-3">
-          <SampleSizeBadge n={sampleSize} minThreshold={30} label="Verified Listings" />
-          <div className="flex items-center bg-[#eaedff] p-0.5 rounded border border-[#dae2fd]">
+        <div className="flex flex-wrap items-center gap-3">
+          {/* Segmented Switcher for Unified Workspace */}
+          <div className="flex items-center bg-[#eaedff] p-1 rounded-lg border border-[#dae2fd]">
             <button
-              onClick={() => setViewMode('grid')}
-              className={`p-1.5 rounded transition ${
-                viewMode === 'grid' ? 'bg-white shadow-xs text-black font-bold' : 'text-gray-500 hover:text-black'
+              type="button"
+              onClick={() => setActiveSection('catalog')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-bold transition cursor-pointer ${
+                activeSection === 'catalog'
+                  ? 'bg-[#131921] text-white shadow-sm'
+                  : 'text-gray-600 hover:text-gray-900'
               }`}
-              title="Grid Cards View"
             >
-              <LayoutGrid size={15} />
+              <ShoppingBag size={14} className={activeSection === 'catalog' ? 'text-[#ff9900]' : ''} />
+              <span>Catalog &amp; Listings ({totalProducts})</span>
             </button>
             <button
-              onClick={() => setViewMode('table')}
-              className={`p-1.5 rounded transition ${
-                viewMode === 'table' ? 'bg-white shadow-xs text-black font-bold' : 'text-gray-500 hover:text-black'
+              type="button"
+              onClick={() => setActiveSection('analytics')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-bold transition cursor-pointer ${
+                activeSection === 'analytics'
+                  ? 'bg-[#131921] text-white shadow-sm'
+                  : 'text-gray-600 hover:text-gray-900'
               }`}
-              title="Dense Table View"
             >
-              <List size={15} />
+              <BarChart2 size={14} className={activeSection === 'analytics' ? 'text-[#ff9900]' : ''} />
+              <span>Analytics &amp; Charts</span>
             </button>
           </div>
+
+          <SampleSizeBadge n={sampleSize} minThreshold={30} label="Verified Listings" />
+
+          {activeSection === 'catalog' && (
+            <div className="flex items-center bg-[#eaedff] p-0.5 rounded border border-[#dae2fd]">
+              <button
+                onClick={() => setViewMode('grid')}
+                className={`p-1.5 rounded transition ${
+                  viewMode === 'grid' ? 'bg-white shadow-xs text-black font-bold' : 'text-gray-500 hover:text-black'
+                }`}
+                title="Grid Cards View"
+              >
+                <LayoutGrid size={15} />
+              </button>
+              <button
+                onClick={() => setViewMode('table')}
+                className={`p-1.5 rounded transition ${
+                  viewMode === 'table' ? 'bg-white shadow-xs text-black font-bold' : 'text-gray-500 hover:text-black'
+                }`}
+                title="Dense Table View"
+              >
+                <List size={15} />
+              </button>
+            </div>
+          )}
         </div>
       </div>
 
-      {/* Main Grid: Left Filter Stack (3 cols) + Right Products Catalog (9 cols) */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+      {activeSection === 'analytics' ? (
+        <AnalyticsWorkspace
+          analyticsEnvelope={analyticsEnvelope}
+          opportunitiesEnvelope={opportunitiesEnvelope || null}
+          isLoading={isLoading}
+          hideHeader={true}
+        />
+      ) : (
+        /* Main Grid: Left Filter Stack (3 cols) + Right Products Catalog (9 cols) */
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         {/* Left Filter Stack Sidebar (Exact Stitch Design) */}
         <aside className="lg:col-span-3 space-y-4">
           <div className="bg-white p-4 rounded-xl border border-[#e2e8f0] shadow-sm space-y-4">
@@ -508,6 +560,7 @@ export function MarketResultsWorkspace({
           </div>
         </div>
       </div>
+      )}
     </div>
   );
 }

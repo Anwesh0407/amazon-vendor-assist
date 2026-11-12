@@ -2,9 +2,7 @@ import { useState, useEffect } from 'react';
 import {
   Home,
   Sliders,
-  ShoppingBag,
   BarChart2,
-  MessageSquare,
   Sparkles,
   Package,
   Search,
@@ -36,7 +34,6 @@ import { HomeWorkspace } from './workspaces/HomeWorkspace';
 import { CategoriesWorkspace } from './workspaces/CategoriesWorkspace';
 import { DefineNicheWorkspace } from './workspaces/DefineNicheWorkspace';
 import { MarketResultsWorkspace } from './workspaces/MarketResultsWorkspace';
-import { AnalyticsWorkspace } from './workspaces/AnalyticsWorkspace';
 import { ReviewsWorkspace } from './workspaces/ReviewsWorkspace';
 import { RecommendationsWorkspace } from './workspaces/RecommendationsWorkspace';
 import { ProductDetailsWorkspace } from './workspaces/ProductDetailsWorkspace';
@@ -240,8 +237,6 @@ export function App() {
     setActiveTab('product_details');
   };
 
-  const sampleSize = analyticsEnvelope?.meta?.sample_size ?? totalProducts;
-
   return (
     <div className="min-h-screen bg-[#faf8ff] text-[#131b2e] font-sans flex flex-col antialiased">
       {/* Global Top Banner: Synthetic Demo Data */}
@@ -297,7 +292,11 @@ export function App() {
             {/* Ask AVA Button */}
             <button
               onClick={() => setActiveTab('ask_ava')}
-              className="flex items-center gap-2 px-3 py-1.5 rounded bg-[#ff9900] hover:bg-[#f08800] text-[#131921] font-bold text-xs shadow transition active:scale-95 cursor-pointer"
+              className={`flex items-center gap-2 px-3 py-1.5 rounded text-xs font-bold shadow transition active:scale-95 cursor-pointer ${
+                activeTab === 'ask_ava'
+                  ? 'bg-[#ff9900] text-[#131921] ring-2 ring-white font-black'
+                  : 'bg-[#ff9900] hover:bg-[#f08800] text-[#131921]'
+              }`}
             >
               <Sparkles className="w-3.5 h-3.5 fill-[#131921] text-[#131921]" />
               <span>Ask AVA</span>
@@ -467,46 +466,20 @@ export function App() {
               <button
                 type="button"
                 onClick={() => setActiveTab('results')}
-                className={`py-2 px-3 transition flex items-center gap-1.5 border-b-2 ${
-                  activeTab === 'results'
-                    ? 'text-[#ff9900] border-[#ff9900] font-bold'
-                    : 'text-gray-300 hover:text-white border-transparent'
-                }`}
-              >
-                <ShoppingBag className="w-3.5 h-3.5" />
-                <span>Market Results</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setActiveTab('analytics')}
-                className={`py-2 px-3 transition flex items-center gap-1.5 border-b-2 ${
-                  activeTab === 'analytics'
+                className={`py-2 px-3 transition flex items-center gap-1.5 border-b-2 cursor-pointer ${
+                  activeTab === 'results' || activeTab === 'analytics'
                     ? 'text-[#ff9900] border-[#ff9900] font-bold'
                     : 'text-gray-300 hover:text-white border-transparent'
                 }`}
               >
                 <BarChart2 className="w-3.5 h-3.5" />
-                <span>Analytics</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setActiveTab('reviews')}
-                className={`py-2 px-3 transition flex items-center gap-1.5 border-b-2 ${
-                  activeTab === 'reviews'
-                    ? 'text-[#ff9900] border-[#ff9900] font-bold'
-                    : 'text-gray-300 hover:text-white border-transparent'
-                }`}
-              >
-                <MessageSquare className="w-3.5 h-3.5" />
-                <span>Reviews Voice</span>
+                <span>Market Results &amp; Analytics</span>
               </button>
 
               <button
                 type="button"
                 onClick={() => setActiveTab('recommendations')}
-                className={`py-2 px-3 transition flex items-center gap-1.5 border-b-2 ${
+                className={`py-2 px-3 transition flex items-center gap-1.5 border-b-2 cursor-pointer ${
                   activeTab === 'recommendations'
                     ? 'text-[#ff9900] border-[#ff9900] font-bold'
                     : 'text-gray-300 hover:text-white border-transparent'
@@ -519,7 +492,7 @@ export function App() {
               <button
                 type="button"
                 onClick={() => setActiveTab('product_details')}
-                className={`py-2 px-3 transition flex items-center gap-1.5 border-b-2 ${
+                className={`py-2 px-3 transition flex items-center gap-1.5 border-b-2 cursor-pointer ${
                   activeTab === 'product_details'
                     ? 'text-[#ff9900] border-[#ff9900] font-bold'
                     : 'text-gray-300 hover:text-white border-transparent'
@@ -527,32 +500,6 @@ export function App() {
               >
                 <Package className="w-3.5 h-3.5" />
                 <span>Product Details</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setActiveTab('ask_ava')}
-                className={`py-2 px-3 transition flex items-center gap-1.5 border-b-2 ${
-                  activeTab === 'ask_ava'
-                    ? 'text-[#ff9900] border-[#ff9900] font-bold'
-                    : 'text-amber-400 hover:text-amber-300 border-transparent'
-                }`}
-              >
-                <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-                <span>Ask AVA</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setActiveTab('login')}
-                className={`py-2 px-3 transition flex items-center gap-1.5 border-b-2 cursor-pointer ${
-                  activeTab === 'login'
-                    ? 'text-[#ff9900] border-[#ff9900] font-bold'
-                    : 'text-gray-300 hover:text-white border-transparent'
-                }`}
-              >
-                <User className="w-3.5 h-3.5" />
-                <span>Seller Onboarding</span>
               </button>
             </nav>
 
@@ -563,30 +510,6 @@ export function App() {
           </div>
         </div>
 
-        {/* Active Grounded Scope Sub-Bar */}
-        <div className="bg-[#eef2ff] border-b border-[#dae2fd] text-xs py-1.5 px-4 text-gray-700">
-          <div className="max-w-7xl mx-auto flex items-center justify-between gap-3">
-            <div className="flex items-center gap-2.5 truncate">
-              <div className="flex items-center gap-1.5 px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 text-[11px] font-bold shrink-0">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-600"></span>
-                <span>Live Data Grounded</span>
-              </div>
-              <span className="font-bold text-gray-900 shrink-0">Current Scope:</span>
-              <span className="text-gray-700 font-medium truncate">
-                {activeNiche?.name || `${selectedCategory} · Odisha Region`} · {sampleSize} listings observed
-              </span>
-            </div>
-
-            <div className="flex items-center gap-3 shrink-0">
-              <button
-                onClick={() => setActiveTab('define_niche')}
-                className="text-xs font-bold text-blue-700 hover:text-blue-900 underline flex items-center gap-1 cursor-pointer"
-              >
-                <span>Change Scope</span>
-              </button>
-            </div>
-          </div>
-        </div>
       </header>
 
       {/* Main Workspace Canvas */}
@@ -633,11 +556,12 @@ export function App() {
           />
         )}
 
-        {activeTab === 'results' && (
+        {(activeTab === 'results' || activeTab === 'analytics') && (
           <MarketResultsWorkspace
             products={products}
             totalProducts={totalProducts}
             analyticsEnvelope={analyticsEnvelope}
+            opportunitiesEnvelope={opportunitiesEnvelope}
             selectedAsin={selectedProduct?.asin}
             onSelectProduct={handleSelectProduct}
             currentPage={currentPage}
@@ -646,14 +570,7 @@ export function App() {
             sortBy={sortBy}
             onSortChange={setSortBy}
             isLoading={isLoadingProducts}
-          />
-        )}
-
-        {activeTab === 'analytics' && (
-          <AnalyticsWorkspace
-            analyticsEnvelope={analyticsEnvelope}
-            opportunitiesEnvelope={opportunitiesEnvelope}
-            isLoading={isLoadingProducts}
+            initialView={activeTab === 'analytics' ? 'analytics' : 'catalog'}
           />
         )}
 
@@ -712,9 +629,9 @@ export function App() {
             <span className="font-mono text-[11px] text-emerald-700">Data Latency: 12ms · API: {backendStatus?.status === 'ok' ? 'Online' : 'Connected'}</span>
             <button onClick={() => setActiveTab('home')} className="hover:text-black cursor-pointer">Home</button>
             <button onClick={() => setActiveTab('categories')} className="hover:text-black cursor-pointer">Categories</button>
-            <button onClick={() => setActiveTab('analytics')} className="hover:text-black cursor-pointer">Analytics Engine</button>
+            <button onClick={() => setActiveTab('results')} className="hover:text-black cursor-pointer">Market Results &amp; Analytics</button>
+            <button onClick={() => setActiveTab('recommendations')} className="hover:text-black cursor-pointer">Recommendations</button>
             <button onClick={() => setActiveTab('ask_ava')} className="hover:text-black cursor-pointer">AVA Intelligence</button>
-            <button onClick={() => setActiveTab('login')} className="hover:text-black cursor-pointer">Seller Onboarding / OTP</button>
           </div>
         </div>
       </footer>

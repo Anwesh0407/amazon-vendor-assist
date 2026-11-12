@@ -10,8 +10,8 @@ BENIGN_INTEGERS = {1, 2, 3, 4, 5, 2024, 2025, 2026, 2027}
 
 def extract_numbers_from_text(text: str) -> List[float]:
     """Extracts numeric values (integers, floats, currency, percentages) from answer text."""
-    # Match currency, percentages, floats, comma-grouped numbers
-    pattern = r'(?:₹|Rs\.?\s*)?(\d{1,3}(?:,\d{3})*(?:\.\d+)?|\d+(?:\.\d+)?)\s*(?:%|★)?'
+    # Match currency, percentages, floats, comma-grouped numbers without splitting 4+ digit integers
+    pattern = r'(?:₹|Rs\.?\s*)?(\d+(?:,\d{3})*(?:\.\d+)?)\s*(?:%|★)?'
     raw_matches = re.findall(pattern, text)
 
     extracted = []
@@ -32,8 +32,16 @@ def _collect_numbers_from_structure(val: Any, collected: Set[float]) -> None:
     if isinstance(val, (int, float)):
         collected.add(round(float(val), 2))
         collected.add(float(int(val)))
+    elif isinstance(val, str):
+        for num in extract_numbers_from_text(val):
+            collected.add(round(num, 2))
+            collected.add(float(int(num)))
     elif isinstance(val, dict):
         for k, v in val.items():
+            if isinstance(k, str):
+                for num in extract_numbers_from_text(k):
+                    collected.add(round(num, 2))
+                    collected.add(float(int(num)))
             try:
                 # also include numeric keys e.g. star ratings 1..5
                 k_float = float(k)

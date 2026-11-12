@@ -75,7 +75,7 @@ async def ask_ava(
         )
 
     # 3. Call Gemini with function calling
-    model_name = settings.GEMINI_MODEL or "gemini-1.5-flash"
+    model_name = settings.GEMINI_MODEL or "gemini-3.1-flash-lite-preview"
     url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_name}:generateContent?key={api_key}"
 
     gemini_tools = _format_tools_for_gemini()
@@ -87,7 +87,7 @@ async def ask_ava(
     evidence_items: List[EvidenceItem] = []
 
     try:
-        async with httpx.AsyncClient(timeout=15.0) as client:
+        async with httpx.AsyncClient(timeout=30.0) as client:
             payload = {
                 "system_instruction": {"parts": [{"text": SYSTEM_PROMPT}]},
                 "contents": messages,

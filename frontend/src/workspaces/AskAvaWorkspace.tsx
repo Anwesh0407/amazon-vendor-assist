@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import type { ChatResponse, ChatEvidenceItem, EvidenceEnvelope } from '../types';
 import { api } from '../services/api';
 import { SampleSizeBadge } from '../components/Badges';
@@ -38,6 +38,14 @@ export function AskAvaWorkspace({ nicheId, nicheName }: AskAvaWorkspaceProps) {
   const [isAsking, setIsAsking] = useState(false);
   const [activeMode, setActiveMode] = useState<'gemini' | 'demo'>('demo');
 
+  useEffect(() => {
+    api.getAssistantStatus().then((st) => {
+      if (st?.mode === 'gemini' || st?.mode === 'demo') {
+        setActiveMode(st.mode);
+      }
+    }).catch(() => {});
+  }, []);
+
   const suggestedQuestions = [
     'What is the median price in this niche?',
     'Which price band has the most listings?',
@@ -71,12 +79,15 @@ export function AskAvaWorkspace({ nicheId, nicheName }: AskAvaWorkspaceProps) {
         niche_id: nicheId,
       });
 
-      setActiveMode(resp.data.mode || 'demo');
+      const mode = resp?.data?.mode ?? (resp as any)?.mode ?? 'demo';
+      setActiveMode(mode === 'gemini' ? 'gemini' : 'demo');
+
+      const botText = resp?.data?.answer ?? (resp as any)?.answer ?? 'No response received.';
 
       const botEntry: ChatEntry = {
         id: `b-${Date.now()}`,
         sender: 'assistant',
-        text: resp.data.answer,
+        text: botText,
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         envelope: resp,
       };
@@ -239,10 +250,10 @@ export function AskAvaWorkspace({ nicheId, nicheName }: AskAvaWorkspaceProps) {
             {messages.map((msg) => {
               const isUser = msg.sender === 'user';
               const envelope = msg.envelope;
-              const chatData = envelope?.data;
-              const evidence = chatData?.evidence || [];
-              const limitations = chatData?.limitations || [];
-              const followUps = chatData?.follow_up_suggestions || [];
+              const chatData = envelope?.data ?? (envelope as any);
+              const evidence: ChatEvidenceItem[] = chatData?.evidence || [];
+              const limitations: string[] = chatData?.limitations || [];
+              const followUps: string[] = chatData?.follow_up_suggestions || [];
 
               return (
                 <div

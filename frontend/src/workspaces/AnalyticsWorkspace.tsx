@@ -20,6 +20,7 @@ interface AnalyticsWorkspaceProps {
   analyticsEnvelope: EvidenceEnvelope<MarketSummary> | null;
   opportunitiesEnvelope: EvidenceEnvelope<OpportunityAnalysis> | null;
   isLoading: boolean;
+  hideHeader?: boolean;
 }
 
 interface NormalizedPriceBand {
@@ -38,6 +39,7 @@ export function AnalyticsWorkspace({
   analyticsEnvelope,
   opportunitiesEnvelope,
   isLoading,
+  hideHeader = false,
 }: AnalyticsWorkspaceProps) {
   if (isLoading || !analyticsEnvelope) {
     return (
@@ -117,31 +119,33 @@ export function AnalyticsWorkspace({
   return (
     <div className="space-y-6">
       {/* Top Breadcrumb & Header (Exact Stitch) */}
-      <div className="flex flex-wrap items-center justify-between gap-4 pb-2 border-b border-[#e2e8f0]">
-        <div>
-          <div className="flex items-center gap-1.5 text-xs text-[#75777c] uppercase font-mono tracking-wider">
-            <span>Catalog Intelligence</span>
-            <span>/</span>
-            <span>Competitive Landscape</span>
-            <span>/</span>
-            <span className="text-[#8a5100] font-bold">Odisha Cluster</span>
+      {!hideHeader && (
+        <div className="flex flex-wrap items-center justify-between gap-4 pb-2 border-b border-[#e2e8f0]">
+          <div>
+            <div className="flex items-center gap-1.5 text-xs text-[#75777c] uppercase font-mono tracking-wider">
+              <span>Catalog Intelligence</span>
+              <span>/</span>
+              <span>Competitive Landscape</span>
+              <span>/</span>
+              <span className="text-[#8a5100] font-bold">Odisha Cluster</span>
+            </div>
+            <h1 className="text-2xl font-bold tracking-tight text-[#131b2e] mt-1 flex items-center gap-2">
+              <BarChart2 className="text-[#ff9900]" size={24} />
+              Market Intelligence Dashboard
+            </h1>
+            <div className="flex items-center gap-2 text-xs text-gray-600 mt-1">
+              <span className="font-semibold text-gray-900">{meta.niche || "Women's Kurtas & Kurtis"}</span>
+              <span>•</span>
+              <span>Sample Scope: {sampleSize} listings</span>
+              <SampleSizeBadge n={sampleSize} minThreshold={30} />
+            </div>
           </div>
-          <h1 className="text-2xl font-bold tracking-tight text-[#131b2e] mt-1 flex items-center gap-2">
-            <BarChart2 className="text-[#ff9900]" size={24} />
-            Market Intelligence Dashboard
-          </h1>
-          <div className="flex items-center gap-2 text-xs text-gray-600 mt-1">
-            <span className="font-semibold text-gray-900">{meta.niche || "Women's Kurtas & Kurtis"}</span>
-            <span>•</span>
-            <span>Sample Scope: {sampleSize} listings</span>
-            <SampleSizeBadge n={sampleSize} minThreshold={30} />
-          </div>
-        </div>
 
-        <div className="flex items-center gap-2">
-          <ObservationEstimateBadge type="observation" />
+          <div className="flex items-center gap-2">
+            <ObservationEstimateBadge type="observation" />
+          </div>
         </div>
-      </div>
+      )}
 
       {/* TOP KPI CARDS (Bento Metric Strip - Exact Stitch Design) */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">

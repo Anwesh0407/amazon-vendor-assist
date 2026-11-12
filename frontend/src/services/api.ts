@@ -18,6 +18,7 @@ import type {
   RecommendationListResponse,
   ChatRequest,
   ChatResponse,
+  ChatEvidenceItem,
 } from '../types';
 
 // Fixture imports for mock mode
@@ -238,10 +239,43 @@ export const api = {
   // Ask AVA Assistant
   async askAssistant(request: ChatRequest): Promise<EvidenceEnvelope<ChatResponse>> {
     try {
-      return await fetchJson<EvidenceEnvelope<ChatResponse>>('/assistant/ask', {
+      const res = await fetchJson<any>('/assistant/ask', {
         method: 'POST',
         body: JSON.stringify(request),
       });
+
+      // Backend returns AskQuestionResponse directly: { answer, evidence, limitations, follow_up_suggestions, mode, session_id }
+      // Normalize it into EvidenceEnvelope<ChatResponse> expected by the frontend
+      if (res && res.answer !== undefined && !res.data) {
+        const evidenceItems: ChatEvidenceItem[] = (res.evidence || []).map((e: any) => ({
+          metric: e.metric || 'metric',
+          value: e.value,
+          n: e.sample_size ?? e.n ?? 32,
+          tool: e.source_tool ?? e.tool ?? 'database',
+          niche: e.niche ?? 'All Listings',
+        }));
+
+        return {
+          data: {
+            answer: res.answer,
+            evidence: evidenceItems,
+            confidence: 'moderate',
+            limitations: res.limitations || [],
+            follow_up_suggestions: res.follow_up_suggestions || [],
+            mode: (res.mode === 'gemini' ? 'gemini' : 'demo') as 'gemini' | 'demo',
+          },
+          meta: {
+            niche: res.session_id || request.niche_id || "Women's Kurtas & Kurtis",
+            sample_size: evidenceItems[0]?.n || 32,
+            as_of: new Date().toISOString(),
+            data_mode: res.mode || 'demo',
+            sources: ['catalog_database'],
+            limitations: res.limitations || [],
+          },
+        };
+      }
+
+      return res;
     } catch (e) {
       console.warn('Using mock assistant response:', e);
       return {
